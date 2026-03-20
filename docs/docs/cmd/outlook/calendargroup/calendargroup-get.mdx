@@ -1,0 +1,125 @@
+import Global from '../../_global.mdx';
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+# outlook calendargroup get
+
+Retrieves a calendar group for a user.
+
+## Usage
+
+```sh
+m365 outlook calendargroup get [options]
+```
+
+## Options
+
+```md definition-list
+`--id [id]`
+: ID of the calendar group. Specify either `id` or `name`, but not both.
+
+`--name [name]`
+: Name of the calendar group. Specify either `id` or `name`, but not both.
+
+`--userId [userId]`
+: ID of the user. Specify either `userId` or `userName`, but not both. This option is required when using application permissions.
+
+`--userName [userName]`
+: UPN of the user. Specify either `userId` or `userName`, but not both. This option is required when using application permissions.
+```
+
+<Global />
+
+## Permissions
+
+<Tabs>
+  <TabItem value="Delegated">
+
+  | Resource        | Permissions                                                                            |
+  |-----------------|----------------------------------------------------------------------------------------|
+  | Microsoft Graph | Calendars.ReadBasic, Calendars.Read, Calendars.Read.Shared, Calendars.ReadWrite.Shared |
+
+  </TabItem>
+  <TabItem value="Application">
+
+  | Resource        | Permissions                         |
+  |-----------------|-------------------------------------|
+  | Microsoft Graph | Calendars.ReadBasic, Calendars.Read |
+
+  </TabItem>
+</Tabs>
+
+::::note
+
+When using delegated permissions, specifying `userId` or `userName` for a different user requires the `Calendars.Read.Shared` or `Calendars.ReadWrite.Shared` scope. When the specified user matches the signed-in user, no shared scope is needed.
+
+::::
+
+## Examples
+
+Get the calendar group specified by name for the signed-in user.
+
+```sh
+m365 outlook calendargroup get --name "Personal Events"
+```
+
+Get the calendar group specified by name for a user using application permissions.
+
+```sh
+m365 outlook calendargroup get --name "Personal Events" --userId "44288f7d-7710-4293-8c8e-36f310ed2e6a"
+```
+
+Get the calendar group specified by id for a user using application permissions.
+
+```sh
+m365 outlook calendargroup get --id "AAMkAGVmMDEzMTM4LTZmYWUtNDdkNC1hMDZiLTU1OGY5OTZhYmY4OABGAAAAAAAiQ8W967B7TKBjgx9rVEURBwAiIsqMbYjsT5e-T7KzowPTAAAAAAEMAAAiIsqMbYjsT5e-T7KzowPTAAABuC34AAA=" --userId "44288f7d-7710-4293-8c8e-36f310ed2e6a"
+```
+
+## Response
+
+<Tabs>
+  <TabItem value="JSON">
+
+  ```json
+  {
+    "id": "id-value",
+    "name": "name-value",
+    "changeKey": "changeKey-value",
+    "classId": "classId-value"
+  }
+  ```
+
+  </TabItem>
+  <TabItem value="Text">
+
+  ```text
+  id                                                                 | name
+  ------------------------------------------------------------------  ----------------
+  id-value                                                           name-value
+  ```
+
+  </TabItem>
+  <TabItem value="CSV">
+
+  ```csv
+  id,name
+  id-value,name-value
+  ```
+
+  </TabItem>
+  <TabItem value="Markdown">
+
+  ```md
+  # outlook calendargroup get
+
+  Date: 3/20/2026
+
+  Property | Value
+  ---------|-------
+  id | id-value
+  name | name-value
+  ```
+
+  </TabItem>
+</Tabs>
+
