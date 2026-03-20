@@ -64,11 +64,14 @@ class OutlookCalendarGroupGetCommand extends GraphCommand {
       const token = auth.connection.accessTokens[auth.defaultResource].accessToken;
       const isAppOnlyAccessToken = accessToken.isAppOnlyAccessToken(token);
 
-      // Determine user identifier and whether the user explicitly requested "other user".
       let userIdentifier: string | undefined = undefined;
       if (args.options.userId || args.options.userName) {
         userIdentifier = args.options.userId ?? args.options.userName;
       }
+
+      const encodedUserIdentifier: string | undefined = userIdentifier
+        ? formatting.encodeQueryParameter(userIdentifier)
+        : undefined;
 
       if (isAppOnlyAccessToken) {
         if (!args.options.userId && !args.options.userName) {
@@ -94,7 +97,7 @@ class OutlookCalendarGroupGetCommand extends GraphCommand {
       }
 
       const getCalendarGroupId = async (calendarGroupName: string): Promise<string> => {
-        const userPath = userIdentifier ? `users('${userIdentifier}')` : 'me';
+        const userPath = encodedUserIdentifier ? `users('${encodedUserIdentifier}')` : 'me';
         const calendarGroups = await odata.getAllItems<CalendarGroup>(
           `${this.resource}/v1.0/${userPath}/calendarGroups?$select=id,name&$filter=name eq '${formatting.encodeQueryParameter(calendarGroupName)}'`
         );
@@ -103,12 +106,8 @@ class OutlookCalendarGroupGetCommand extends GraphCommand {
           throw `The specified calendar group '${calendarGroupName}' does not exist.`;
         }
 
-        // Graph guarantees unique calendarGroupId; for duplicate names, return the first match.
         return calendarGroups[0].id!;
       };
-
-      // Schema guarantees exactly one of `id` or `name` is present,
-      // so avoid ternaries/undefined paths to keep coverage deterministic.
       let calendarGroupId: string;
       if (args.options.id) {
         calendarGroupId = args.options.id;
@@ -117,8 +116,8 @@ class OutlookCalendarGroupGetCommand extends GraphCommand {
         calendarGroupId = await getCalendarGroupId(args.options.name!);
       }
 
-      // For delegated access without userId/userName: use /me.
-      const userPath = userIdentifier ? `users('${userIdentifier}')` : 'me';
+
+      const userPath = encodedUserIdentifier ? `users('${encodedUserIdentifier}')` : 'me';
       const requestUrl = `${this.resource}/v1.0/${userPath}/calendarGroups/${calendarGroupId}`;
 
       if (this.verbose) {

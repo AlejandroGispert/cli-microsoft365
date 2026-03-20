@@ -11,6 +11,7 @@ import { accessToken } from '../../../../utils/accessToken.js';
 import { pid } from '../../../../utils/pid.js';
 import { session } from '../../../../utils/session.js';
 import { sinonUtil } from '../../../../utils/sinonUtil.js';
+import { formatting } from '../../../../utils/formatting.js';
 import commands from '../../commands.js';
 import command, { options } from './calendargroup-get.js';
 
@@ -293,13 +294,14 @@ describe(commands.CALENDARGROUP_GET, () => {
     sinonUtil.restore(accessToken.getScopesFromAccessToken);
     sinon.stub(accessToken, 'getScopesFromAccessToken').returns(['Calendars.ReadWrite.Shared']);
 
-    const expectedFilterUrl = `https://graph.microsoft.com/v1.0/users('${userName}')/calendarGroups?$select=id,name&$filter=name eq 'Personal%20Events'`;
+    const encodedUserName = formatting.encodeQueryParameter(userName);
+    const expectedFilterUrl = `https://graph.microsoft.com/v1.0/users('${encodedUserName}')/calendarGroups?$select=id,name&$filter=name eq 'Personal%20Events'`;
     sinon.stub(request, 'get').callsFake(async (opts) => {
       if (opts.url === expectedFilterUrl) {
         return calendarGroupsResponseForFilter;
       }
 
-      if (opts.url === `https://graph.microsoft.com/v1.0/users('${userName}')/calendarGroups/${resolvedCalendarGroupId}`) {
+      if (opts.url === `https://graph.microsoft.com/v1.0/users('${encodedUserName}')/calendarGroups/${resolvedCalendarGroupId}`) {
         return calendarGroupResponse;
       }
 
