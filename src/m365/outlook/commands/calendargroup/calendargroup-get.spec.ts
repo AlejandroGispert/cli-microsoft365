@@ -18,7 +18,6 @@ import command, { options } from './calendargroup-get.js';
 describe(commands.CALENDARGROUP_GET, () => {
   const calendarGroupId = 'AAMkAGE0MGM1Y2M5LWEzMmUtNGVlNy05MjRlLTk0YmYyY2I5NTM3ZAAuAAAAAAC_0WfqSjt_SqLtNkuO-bj1AQAbfYq5lmBxQ6a4t1fGbeYAAAAAAEOAAA=';
   const calendarGroupName = 'Personal Events';
-  const resolvedCalendarGroupId = 'AAMkAGE0MGM1Y2M5LWEzMmUtNGVlNy05MjRlLTk0YmYyY2I5NTM3ZAAuAAAAAAC_0WfqSjt_SqLtNkuO-bj1AQAbfYq5lmBxQ6a4t1fGbeYAAAAAAEPAAA=';
   const otherUserId = '44288f7d-7710-4293-8c8e-36f310ed2e6a';
   const userId = 'b743445a-112c-4fda-9afd-05943f9c7b36';
   const userName = 'john.doe@contoso.com';
@@ -35,7 +34,7 @@ describe(commands.CALENDARGROUP_GET, () => {
   const calendarGroupsResponseForFilter = {
     value: [
       {
-        id: resolvedCalendarGroupId,
+        id: calendarGroupId,
         name: calendarGroupName
       }
     ]
@@ -102,10 +101,6 @@ describe(commands.CALENDARGROUP_GET, () => {
     assert.notStrictEqual(command.description, null);
   });
 
-  it('defines correct properties for the default output', () => {
-    assert.deepStrictEqual(command.defaultProperties(), ['id', 'name']);
-  });
-
   it('passes validation with id', () => {
     const actual = commandOptionsSchema.safeParse({ id: calendarGroupId });
     assert.strictEqual(actual.success, true);
@@ -170,21 +165,17 @@ describe(commands.CALENDARGROUP_GET, () => {
   });
 
   it('retrieves calendar group for the signed-in user by name using delegated permissions', async () => {
-    const expectedFilterUrl = `https://graph.microsoft.com/v1.0/me/calendarGroups?$select=id,name&$filter=name eq 'Personal%20Events'`;
+    const expectedFilterUrl = `https://graph.microsoft.com/v1.0/me/calendarGroups?$filter=name eq 'Personal%20Events'`;
     sinon.stub(request, 'get').callsFake(async (opts) => {
       if (opts.url === expectedFilterUrl) {
         return calendarGroupsResponseForFilter;
-      }
-
-      if (opts.url === `https://graph.microsoft.com/v1.0/me/calendarGroups/${resolvedCalendarGroupId}`) {
-        return calendarGroupResponse;
       }
 
       throw 'Invalid request';
     });
 
     await command.action(logger, { options: commandOptionsSchema.parse({ name: calendarGroupName }) });
-    assert(loggerLogSpy.calledOnceWith(calendarGroupResponse));
+    assert(loggerLogSpy.calledOnceWith(calendarGroupsResponseForFilter.value[0]));
   });
 
   it('retrieves calendar group for a user specified by id using app-only permissions', async () => {
@@ -240,21 +231,17 @@ describe(commands.CALENDARGROUP_GET, () => {
     sinonUtil.restore(accessToken.getScopesFromAccessToken);
     sinon.stub(accessToken, 'getScopesFromAccessToken').returns(['Calendars.Read.Shared']);
 
-    const expectedFilterUrl = `https://graph.microsoft.com/v1.0/users('${otherUserId}')/calendarGroups?$select=id,name&$filter=name eq 'Personal%20Events'`;
+    const expectedFilterUrl = `https://graph.microsoft.com/v1.0/users('${otherUserId}')/calendarGroups?$filter=name eq 'Personal%20Events'`;
     sinon.stub(request, 'get').callsFake(async (opts) => {
       if (opts.url === expectedFilterUrl) {
         return calendarGroupsResponseForFilter;
-      }
-
-      if (opts.url === `https://graph.microsoft.com/v1.0/users('${otherUserId}')/calendarGroups/${resolvedCalendarGroupId}`) {
-        return calendarGroupResponse;
       }
 
       throw 'Invalid request';
     });
 
     await command.action(logger, { options: commandOptionsSchema.parse({ name: calendarGroupName, userId: otherUserId }) });
-    assert(loggerLogSpy.calledOnceWith(calendarGroupResponse));
+    assert(loggerLogSpy.calledOnceWith(calendarGroupsResponseForFilter.value[0]));
   });
 
   it('retrieves calendar group for the signed-in user with verbose output', async () => {
@@ -274,8 +261,26 @@ describe(commands.CALENDARGROUP_GET, () => {
     assert(logToStderrSpy.calledOnce);
   });
 
+  it('retrieves calendar group by name for the signed-in user with verbose output', async () => {
+    const logToStderrSpy = sinon.spy(logger, 'logToStderr');
+    const expectedFilterUrl = `https://graph.microsoft.com/v1.0/me/calendarGroups?$filter=name eq 'Personal%20Events'`;
+
+    sinon.stub(request, 'get').callsFake(async (opts) => {
+      if (opts.url === expectedFilterUrl) {
+        return calendarGroupsResponseForFilter;
+      }
+
+      throw 'Invalid request';
+    });
+
+    await command.action(logger, { options: commandOptionsSchema.parse({ name: calendarGroupName, verbose: true }) });
+
+    assert(loggerLogSpy.calledOnceWith(calendarGroupsResponseForFilter.value[0]));
+    assert(logToStderrSpy.calledOnceWith(`Retrieving calendar group '${calendarGroupName}'...`));
+  });
+
   it('throws an error when calendar group name does not match any results', async () => {
-    const expectedFilterUrl = `https://graph.microsoft.com/v1.0/me/calendarGroups?$select=id,name&$filter=name eq 'Personal%20Events'`;
+    const expectedFilterUrl = `https://graph.microsoft.com/v1.0/me/calendarGroups?$filter=name eq 'Personal%20Events'`;
     sinon.stub(request, 'get').callsFake(async (opts) => {
       if (opts.url === expectedFilterUrl) {
         return { value: [] };
@@ -295,21 +300,17 @@ describe(commands.CALENDARGROUP_GET, () => {
     sinon.stub(accessToken, 'getScopesFromAccessToken').returns(['Calendars.ReadWrite.Shared']);
 
     const encodedUserName = formatting.encodeQueryParameter(userName);
-    const expectedFilterUrl = `https://graph.microsoft.com/v1.0/users('${encodedUserName}')/calendarGroups?$select=id,name&$filter=name eq 'Personal%20Events'`;
+    const expectedFilterUrl = `https://graph.microsoft.com/v1.0/users('${encodedUserName}')/calendarGroups?$filter=name eq 'Personal%20Events'`;
     sinon.stub(request, 'get').callsFake(async (opts) => {
       if (opts.url === expectedFilterUrl) {
         return calendarGroupsResponseForFilter;
-      }
-
-      if (opts.url === `https://graph.microsoft.com/v1.0/users('${encodedUserName}')/calendarGroups/${resolvedCalendarGroupId}`) {
-        return calendarGroupResponse;
       }
 
       throw 'Invalid request';
     });
 
     await command.action(logger, { options: commandOptionsSchema.parse({ name: calendarGroupName, userName }) });
-    assert(loggerLogSpy.calledOnceWith(calendarGroupResponse));
+    assert(loggerLogSpy.calledOnceWith(calendarGroupsResponseForFilter.value[0]));
   });
 });
 

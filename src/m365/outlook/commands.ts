@@ -5,6 +5,7 @@ export default {
   CALENDAR_GET: `${prefix} calendar get`,
   CALENDAR_REMOVE: `${prefix} calendar remove`,
   CALENDARGROUP_LIST: `${prefix} calendargroup list`,
+  CALENDARGROUP_GET: `${prefix} calendargroup get`,
   CALENDARGROUP_SET: `${prefix} calendargroup set`,
   EVENT_CANCEL: `${prefix} event cancel`,
   EVENT_LIST: `${prefix} event list`,

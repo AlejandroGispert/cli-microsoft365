@@ -49,11 +49,11 @@ m365 outlook calendargroup get [options]
   </TabItem>
 </Tabs>
 
-::::note
+:::note
 
 When using delegated permissions, specifying `userId` or `userName` for a different user requires the `Calendars.Read.Shared` or `Calendars.ReadWrite.Shared` scope. When the specified user matches the signed-in user, no shared scope is needed.
 
-::::
+:::
 
 ## Examples
 
@@ -82,10 +82,10 @@ m365 outlook calendargroup get --id "AAMkAGVmMDEzMTM4LTZmYWUtNDdkNC1hMDZiLTU1OGY
 
   ```json
   {
-    "id": "id-value",
-    "name": "name-value",
-    "changeKey": "changeKey-value",
-    "classId": "classId-value"
+    "id": "AAMkAGE0MGM1Y2M5LWEzMmUtNGVlNy05MjRlLTk0YmYyY2I5NTM3ZAAuAAAAAAC_0WfqSjt_SqLtNkuO-bj1AQAbfYq5lmBxQ6a4t1fGbeYAAAAAAEOAAA=",
+    "name": "My Calendars",
+    "changeKey": "nfZyf7VcrEKLNoU37KWlkQAAA0x0+w==",
+    "classId": "0006f0b7-0000-0000-c000-000000000046"
   }
   ```
 
@@ -93,9 +93,9 @@ m365 outlook calendargroup get --id "AAMkAGVmMDEzMTM4LTZmYWUtNDdkNC1hMDZiLTU1OGY
   <TabItem value="Text">
 
   ```text
-  id                                                                 | name
-  ------------------------------------------------------------------  ----------------
-  id-value                                                           name-value
+  id                                                                                                                       name
+  -----------------------------------------------------------------------------------------------------------------------  ----------------
+  AAMkAGE0MGM1Y2M5LWEzMmUtNGVlNy05MjRlLTk0YmYyY2I5NTM3ZAAuAAAAAAC_0WfqSjt_SqLtNkuO-bj1AQAbfYq5lmBxQ6a4t1fGbeYAAAAAAEOAAA=  My Calendars
   ```
 
   </TabItem>
@@ -103,7 +103,7 @@ m365 outlook calendargroup get --id "AAMkAGVmMDEzMTM4LTZmYWUtNDdkNC1hMDZiLTU1OGY
 
   ```csv
   id,name
-  id-value,name-value
+  AAMkAGE0MGM1Y2M5LWEzMmUtNGVlNy05MjRlLTk0YmYyY2I5NTM3ZAAuAAAAAAC_0WfqSjt_SqLtNkuO-bj1AQAbfYq5lmBxQ6a4t1fGbeYAAAAAAEOAAA=,My Calendars
   ```
 
   </TabItem>
@@ -116,8 +116,8 @@ m365 outlook calendargroup get --id "AAMkAGVmMDEzMTM4LTZmYWUtNDdkNC1hMDZiLTU1OGY
 
   Property | Value
   ---------|-------
-  id | id-value
-  name | name-value
+  id | AAMkAGE0MGM1Y2M5LWEzMmUtNGVlNy05MjRlLTk0YmYyY2I5NTM3ZAAuAAAAAAC_0WfqSjt_SqLtNkuO-bj1AQAbfYq5lmBxQ6a4t1fGbeYAAAAAAEOAAA=
+  name | My Calendars
   ```
 
   </TabItem>

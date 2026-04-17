@@ -55,9 +55,6 @@ class OutlookCalendarGroupGetCommand extends GraphCommand {
       });
   }
 
-  public defaultProperties(): string[] | undefined {
-    return ['id', 'name'];
-  }
 
   public async commandAction(logger: Logger, args: CommandArgs): Promise<void> {
     try {
@@ -96,44 +93,46 @@ class OutlookCalendarGroupGetCommand extends GraphCommand {
         }
       }
 
-      const getCalendarGroupId = async (calendarGroupName: string): Promise<string> => {
+      const getCalendarGroupByName = async (calendarGroupName: string): Promise<CalendarGroup> => {
         const userPath = encodedUserIdentifier ? `users('${encodedUserIdentifier}')` : 'me';
         const calendarGroups = await odata.getAllItems<CalendarGroup>(
-          `${this.resource}/v1.0/${userPath}/calendarGroups?$select=id,name&$filter=name eq '${formatting.encodeQueryParameter(calendarGroupName)}'`
+          `${this.resource}/v1.0/${userPath}/calendarGroups?$filter=name eq '${formatting.encodeQueryParameter(calendarGroupName)}'`
         );
 
         if (calendarGroups.length === 0) {
           throw `The specified calendar group '${calendarGroupName}' does not exist.`;
         }
 
-        return calendarGroups[0].id!;
+        return calendarGroups[0];
       };
-      let calendarGroupId: string;
-      if (args.options.id) {
-        calendarGroupId = args.options.id;
+
+      if (args.options.name) {
+        if (this.verbose) {
+          await logger.logToStderr(`Retrieving calendar group '${args.options.name}'...`);
+        }
+        const result = await getCalendarGroupByName(args.options.name);
+        await logger.log(result);
       }
       else {
-        calendarGroupId = await getCalendarGroupId(args.options.name!);
+        const calendarGroupId = args.options.id!;
+        const userPath = encodedUserIdentifier ? `users('${encodedUserIdentifier}')` : 'me';
+        const requestUrl = `${this.resource}/v1.0/${userPath}/calendarGroups/${calendarGroupId}`;
+
+        if (this.verbose) {
+          await logger.logToStderr(`Retrieving calendar group '${calendarGroupId}'...`);
+        }
+
+        const requestOptions: CliRequestOptions = {
+          url: requestUrl,
+          headers: {
+            accept: 'application/json;odata.metadata=none'
+          },
+          responseType: 'json'
+        };
+
+        const result = await request.get<CalendarGroup>(requestOptions);
+        await logger.log(result);
       }
-
-
-      const userPath = encodedUserIdentifier ? `users('${encodedUserIdentifier}')` : 'me';
-      const requestUrl = `${this.resource}/v1.0/${userPath}/calendarGroups/${calendarGroupId}`;
-
-      if (this.verbose) {
-        await logger.logToStderr(`Retrieving calendar group '${calendarGroupId}'...`);
-      }
-
-      const requestOptions: CliRequestOptions = {
-        url: requestUrl,
-        headers: {
-          accept: 'application/json;odata.metadata=none'
-        },
-        responseType: 'json'
-      };
-
-      const result = await request.get<CalendarGroup>(requestOptions);
-      await logger.log(result);
     }
     catch (err: any) {
       this.handleRejectedODataJsonPromise(err);
